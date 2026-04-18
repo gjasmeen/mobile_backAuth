@@ -1,50 +1,137 @@
-# Welcome to your Expo app 👋
+Final CPRG-303 — Supabase Authentication Integration 
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+This project implements full authentication in an Expo React Native mobile application using Supabase Auth, React Hook Form, and Zod. It includes sign‑up, sign‑in, sign‑out, protected routes, session persistence, and proper error handling. 
 
-## Get started
+Features Implemented 
 
-1. Install dependencies
+   Authentication (Supabase Auth) 
 
-   ```bash
-   npm install
-   ```
+   Email/password Sign‑Up 
 
-2. Start the app
+   Email/password Sign‑In 
 
-   ```bash
-   npx expo start
-   ```
+   Sign‑Out from authenticated area 
 
-In the output, you'll find options to open the app in a
+   Secure session handling using Supabase 
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+   Environment variables for Supabase URL + anon key 
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+   Form Validation 
 
-## Get a fresh project
+   Built using React Hook Form 
 
-When you're ready, run:
+   Zod schema validation 
 
-```bash
-npm run reset-project
-```
+   Clear error messages for invalid credentials, weak passwords, missing fields, and network issues 
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+   Protected Navigation 
 
-## Learn more
+   Unauthenticated users cannot access protected screens 
 
-To learn more about developing your project with Expo, look at the following resources:
+On app launch: 
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+   App checks for existing Supabase session 
 
-## Join the community
+   Displays a loading/splash screen while restoring session 
 
-Join our community of developers creating universal apps.
+   Redirects correctly after login/logout 
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+   UI/UX Quality 
+
+   Consistent layout across all auth screens 
+
+   Loading indicators during async operations 
+
+   No crashes on failed authentication 
+
+   Clean, readable error feedback 
+
+   Tech Stack 
+
+   Expo (React Native) 
+
+   Supabase Auth 
+
+   Expo Router 
+
+   React Hook Form 
+
+   Zod 
+
+   TypeScript 
+
+Setup Instructions 
+
+   1. Clone the repository 
+
+   Code 
+
+   git clone <your-repo-url> 
+
+   cd Final-CPRG303 
+
+   2. Install dependencies 
+
+   Code 
+
+   npm install 
+
+   3. Create a .env file in the project root 
+
+   Code 
+
+   EXPO_PUBLIC_SUPABASE_URL=your_supabase_url 
+
+   EXPO_PUBLIC_SUPABASE_ANON_KEY=your_anon_key 
+
+   4. Ensure .env is in .gitignore 
+
+   The .env file must not be committed. 
+
+   5. Start the application 
+
+   Code 
+
+   npm run start 
+
+   Use: 
+
+      w for web 
+
+      a for Android 
+
+      i for iOS 
+
+Supabase Setup Notes 
+
+   A Supabase project was created for this app. 
+
+
+The Project URL and anon key were copied into the .env file. 
+
+   @supabase/supabase-js was installed and configured. 
+
+   Implemented methods: 
+
+   supabase.auth.signUp() 
+
+   supabase.auth.signInWithPassword() 
+
+   supabase.auth.signOut() 
+
+   supabase.auth.getSession() 
+
+Test account for has an account: 
+
+   username: johndoe@gmail.com
+   
+   password: 123456
+
+
+Team Members:
+
+   Jasmeen Garcha 
+
+   Anagha Roy 
+
+   Ryan Richardson 
