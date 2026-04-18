@@ -1,3 +1,5 @@
+READ ME
+
 Final CPRG-303 — Supabase Authentication Integration 
 
 This project implements full authentication in an Expo React Native mobile application using Supabase Auth, React Hook Form, and Zod. It includes sign‑up, sign‑in, sign‑out, protected routes, session persistence, and proper error handling. 
