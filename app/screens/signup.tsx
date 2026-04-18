@@ -1,9 +1,11 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useNavigation } from "@react-navigation/native";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React from "react";
+
 import { Controller, useForm } from "react-hook-form";
 import {
-  ActivityIndicator,
+  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -14,40 +16,49 @@ import {
   View,
 } from "react-native";
 import { supabase } from "../../utils/supabase";
-import { SignInFormData, signInSchema } from "../../validation/signInSchema";
+import { SignUpFormData, signUpSchema } from "../../validation/signUpSchema";
 
-export default function SignIn() {
+
+export default function SignUp() {
+  const navigation = useNavigation<any>();
   const router = useRouter();
-  const [authError, setAuthError] = useState("");
-
+ 
   const {
     control,
     handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm<SignInFormData>({
-    resolver: zodResolver(signInSchema),
+    formState: { errors, isValid, isSubmitting },
+    reset,
+  } = useForm<SignUpFormData>({
+    resolver: zodResolver(signUpSchema),
     mode: "onChange",
     defaultValues: {
+      fullName: "",
       email: "",
       password: "",
+      confirmPassword: "",
     },
   });
+  const onSubmit = async (data: SignUpFormData) => {
+  const { error } = await supabase.auth.signUp({
+    email: data.email,
+    password: data.password,
+  });
 
-  const onSubmit = async (data: SignInFormData) => {
-    setAuthError(""); 
+  if (error) {
+    Alert.alert("Error", error.message);
+  } else {
+    Alert.alert(
+      "Success!", 
+      "Account created! Please check your email for a confirmation link.",
+      [{ text: "OK", onPress: () => router.replace("/screens/signin") }]
+    );
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email: data.email,
-      password: data.password,
-    });
-
-    if (error) {
-      setAuthError("Incorrect email or password. Please try again.");
-      return;
-    }
-
-    router.replace("/(tabs)/home");
-  };
+    setTimeout(() => {
+      reset();
+      router.replace("/screens/signin")
+    }, 300);
+  }
+};
 
   return (
     <KeyboardAvoidingView
@@ -55,17 +66,33 @@ export default function SignIn() {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.title}>Sign In</Text>
-        <Text style={styles.subtitle}>Access your account</Text>
+        <Text style={styles.title}>Create Account</Text>
+        <Text style={styles.subtitle}>Fill in your details to sign up</Text>
 
-        {authError !== "" && (
-          <Text style={styles.authError}>{authError}</Text>
-        )}
+        {/* Full Name */}
+        <View style={styles.formGroup}>
+          <Text style={styles.label}>Full Name</Text>
+          <Controller
+            control={control}
+            name="fullName"
+            render={({ field: { onChange, onBlur, value } }) => (
+              <TextInput
+                placeholder="Enter full name"
+                value={value}
+                onChangeText={onChange}
+                onBlur={onBlur}
+                style={[styles.input, errors.fullName && styles.inputError]}
+              />
+            )}
+          />
+          {errors.fullName && (
+            <Text style={styles.errorText}>{errors.fullName.message}</Text>
+          )}
+        </View>
 
         {/* Email */}
         <View style={styles.formGroup}>
           <Text style={styles.label}>Email</Text>
-
           <Controller
             control={control}
             name="email"
@@ -81,7 +108,6 @@ export default function SignIn() {
               />
             )}
           />
-
           {errors.email && (
             <Text style={styles.errorText}>{errors.email.message}</Text>
           )}
@@ -90,7 +116,6 @@ export default function SignIn() {
         {/* Password */}
         <View style={styles.formGroup}>
           <Text style={styles.label}>Password</Text>
-
           <Controller
             control={control}
             name="password"
@@ -105,31 +130,61 @@ export default function SignIn() {
               />
             )}
           />
-
           {errors.password && (
             <Text style={styles.errorText}>{errors.password.message}</Text>
           )}
         </View>
 
-        {/* Submit Button */}
-        <TouchableOpacity
-          style={[styles.button, isSubmitting && styles.buttonDisabled]}
-          onPress={handleSubmit(onSubmit)}
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? (
-            <ActivityIndicator color="#ffffff" />
-          ) : (
-            <Text style={styles.buttonText}>Sign In</Text>
+        {/* Confirm Password */}
+        <View style={styles.formGroup}>
+          <Text style={styles.label}>Confirm Password</Text>
+          <Controller
+            control={control}
+            name="confirmPassword"
+            render={({ field: { onChange, onBlur, value } }) => (
+              <TextInput
+                placeholder="Re-enter password"
+                value={value}
+                onChangeText={onChange}
+                onBlur={onBlur}
+                secureTextEntry
+                style={[
+                  styles.input,
+                  errors.confirmPassword && styles.inputError,
+                ]}
+              />
+            )}
+          />
+          {errors.confirmPassword && (
+            <Text style={styles.errorText}>
+              {errors.confirmPassword.message}
+            </Text>
           )}
+        </View>
+
+        {/* Submit */}
+        <TouchableOpacity
+          style={[
+            styles.button,
+            (!isValid || isSubmitting) && styles.buttonDisabled,
+          ]}
+          onPress={() => {
+            console.log("Button clicked");
+            handleSubmit(onSubmit)();
+          }}
+          disabled={!isValid || isSubmitting}
+        >
+          <Text style={styles.buttonText}>
+            {isSubmitting ? "Creating Account..." : "Sign Up"}
+          </Text>
         </TouchableOpacity>
 
-        {/* Redirect to Sign Up */}
+        {/* Go to Sign In */}
         <TouchableOpacity
-          style={[styles.button, { backgroundColor: "#6d28d9", marginTop: 15 }]}
-          onPress={() => router.push("/screens/signup")}
+          style={[styles.button, { backgroundColor: "#6d28d9", marginTop: 20 }]}
+          onPress={() => router.replace("/screens/signin")}
         >
-          <Text style={styles.buttonText}>Don't have an account? Sign Up</Text>
+          <Text style={styles.buttonText}>Already have an account? Sign In</Text>
         </TouchableOpacity>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -158,16 +213,6 @@ const styles = StyleSheet.create({
     color: "#6b7280",
     textAlign: "center",
     marginBottom: 24,
-  },
-  authError: {
-    color: "#dc2626",
-    backgroundColor: "#fee2e2",
-    padding: 10,
-    borderRadius: 8,
-    textAlign: "center",
-    marginBottom: 15,
-    fontSize: 14,
-    fontWeight: "600",
   },
   formGroup: {
     marginBottom: 16,
