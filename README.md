@@ -121,10 +121,10 @@ The Project URL and anon key were copied into the .env file.
 
    supabase.auth.getSession() 
 
-Test account for has an account: 
+Test account for "has has an account": 
 
    username: johndoe@gmail.com
-   
+
    password: 123456
 
 
