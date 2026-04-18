@@ -1,11 +1,8 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useNavigation } from "@react-navigation/native";
 import { useRouter } from "expo-router";
-import React from "react";
-
+import React, { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -18,15 +15,14 @@ import {
 import { supabase } from "../../utils/supabase";
 import { SignUpFormData, signUpSchema } from "../../validation/signUpSchema";
 
-
 export default function SignUp() {
-  const navigation = useNavigation<any>();
   const router = useRouter();
- 
+  const [authError, setAuthError] = useState("");
+
   const {
     control,
     handleSubmit,
-    formState: { errors, isValid, isSubmitting },
+    formState: { errors, isSubmitting, isValid },
     reset,
   } = useForm<SignUpFormData>({
     resolver: zodResolver(signUpSchema),
@@ -38,27 +34,37 @@ export default function SignUp() {
       confirmPassword: "",
     },
   });
+
   const onSubmit = async (data: SignUpFormData) => {
-  const { error } = await supabase.auth.signUp({
-    email: data.email,
-    password: data.password,
-  });
+    setAuthError("");
 
-  if (error) {
-    Alert.alert("Error", error.message);
-  } else {
-    Alert.alert(
-      "Success!", 
-      "Account created! Please check your email for a confirmation link.",
-      [{ text: "OK", onPress: () => router.replace("/screens/signin") }]
-    );
+    const { data: signUpData, error } = await supabase.auth.signUp({
+      email: data.email,
+      password: data.password,
+    });
 
-    setTimeout(() => {
-      reset();
-      router.replace("/screens/signin")
-    }, 300);
-  }
-};
+    if (error) {
+      const msg = error.message.toLowerCase();
+
+      if (msg.includes("already") || msg.includes("exists")) {
+        setAuthError("This email is already registered. Please sign in instead.");
+        return;
+      }
+
+      setAuthError(error.message);
+      return;
+    }
+
+    if (signUpData?.user && signUpData.user.identities?.length === 0) {
+      setAuthError(
+        "This email is already registered but not confirmed. Please check your inbox for the confirmation link."
+      );
+      return;
+    }
+
+    reset();
+    router.replace("/screens/signin");
+  };
 
   return (
     <KeyboardAvoidingView
@@ -68,6 +74,10 @@ export default function SignUp() {
       <ScrollView contentContainerStyle={styles.container}>
         <Text style={styles.title}>Create Account</Text>
         <Text style={styles.subtitle}>Fill in your details to sign up</Text>
+
+        {authError !== "" && (
+          <Text style={styles.authError}>{authError}</Text>
+        )}
 
         {/* Full Name */}
         <View style={styles.formGroup}>
@@ -168,10 +178,7 @@ export default function SignUp() {
             styles.button,
             (!isValid || isSubmitting) && styles.buttonDisabled,
           ]}
-          onPress={() => {
-            console.log("Button clicked");
-            handleSubmit(onSubmit)();
-          }}
+          onPress={handleSubmit(onSubmit)}
           disabled={!isValid || isSubmitting}
         >
           <Text style={styles.buttonText}>
@@ -213,6 +220,16 @@ const styles = StyleSheet.create({
     color: "#6b7280",
     textAlign: "center",
     marginBottom: 24,
+  },
+  authError: {
+    color: "#dc2626",
+    backgroundColor: "#fee2e2",
+    padding: 10,
+    borderRadius: 8,
+    textAlign: "center",
+    marginBottom: 15,
+    fontSize: 14,
+    fontWeight: "600",
   },
   formGroup: {
     marginBottom: 16,
